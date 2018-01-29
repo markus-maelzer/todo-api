@@ -51,13 +51,30 @@ app.get('/todos/:id', (req, res) => {
       });
     }
     res.send({todo})
-  }).catch(e => res.send());
-
-
+  }).catch(e => res.send(e));
 });
+
+app.delete('/todos/:id', validateId, (req, res) => {
+  const id = req.params.id;
+
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if(!todo) {
+      return res.status(404).send({message: 'Todo not found'})
+    }
+    res.send(todo);
+  }).catch(e => res.send(e));
+})
 
 app.listen(port, () => {
   console.log(`Server is runing on port ${port}`);
 })
 
 module.exports = {app};
+
+function validateId(req, res, next) {
+  if(!ObjectID.isValid(req.params.id)) {
+    return res.status(404).send({message: 'Todo not found - id invalid'});
+    return next('Todo not found - id invalid');
+  }
+  next();
+}
